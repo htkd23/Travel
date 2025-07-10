@@ -1,0 +1,11 @@
+{
+  "menu": {
+    "home": "Home",
+    "domestic": "Domestic",
+    "international": "International",
+    "choice": "Choice",
+    "management": "Tour Management"
+  },
+  "logout": "Log out",
+  "hello_user": "Hello, {{username}}"
+}

@@ -1,0 +1,11 @@
+{
+    "menu": {
+        "home": "Trang chủ",
+        "domestic": "Trong nước",
+        "international": "Nước ngoài",
+        "choice": "Tự chọn",
+        "management": "Quản lý đặt tour"
+    },
+    "logout": "Đăng xuất",
+    "hello_user": "Xin chào, {{username}}"
+}
