@@ -32,7 +32,7 @@ public class DashboardService {
         for (Object[] row : rawData) {
             int monthNum = (int) row[0];
             long bookings = ((Number) row[1]).longValue();
-            double revenue = ((Number) row[2]).doubleValue();
+            double revenue = ((Number) row[2]).doubleValue();  // Thay đổi chỗ này nếu cần lấy giá đã giảm
 
             DashboardStats.MonthlyStat stat = new DashboardStats.MonthlyStat();
             stat.setMonth(Month.of(monthNum).getDisplayName(TextStyle.SHORT, Locale.ENGLISH));
@@ -45,37 +45,40 @@ public class DashboardService {
         }
 
         stats.setTotalBookings(totalBookings);
-        stats.setTotalRevenue(totalRevenue);
+        stats.setTotalRevenue(totalRevenue);  // Doanh thu sẽ được tính từ giá đã giảm
         stats.setMonthlyStats(monthlyStats);
 
-        // ✅ Thêm tour được đặt nhiều nhất
-        // ✅ Thêm danh sách 5 tour có lượt đặt nhiều nhất
+        // Lấy danh sách các tour được đặt nhiều nhất
         List<Object[]> topTourData = bookingRepository.findTopTourStats();
         List<DashboardStats.TopTourStat> topTours = new ArrayList<>();
-
         for (int i = 0; i < Math.min(5, topTourData.size()); i++) {
             Object[] row = topTourData.get(i);
             String tourName = (String) row[0];
             long bookings = ((Number) row[1]).longValue();
             double revenue = ((Number) row[2]).doubleValue();
+            Integer tourId = (Integer) row[3];
+            String imagePath = (String) row[4];
 
             DashboardStats.TopTourStat tourStat = new DashboardStats.TopTourStat();
             tourStat.setTourName(tourName);
             tourStat.setBookings(bookings);
             tourStat.setRevenue(revenue);
+            tourStat.setTourId(tourId);
+            tourStat.setImagePath(imagePath);
 
             topTours.add(tourStat);
         }
 
         stats.setTopTours(topTours);
 
-        // ✅ Tính số lượng tour quốc tế và nội địa
-        long domesticTours = tourRepository.countToursByType(TourType.domestic);  // Sử dụng TourType enum với chữ thường
-        long internationalTours = tourRepository.countToursByType(TourType.international);  // Sử dụng TourType enum với chữ thường
+        // Tính số lượng tour quốc tế và nội địa
+        long domesticTours = tourRepository.countToursByType(TourType.domestic);
+        long internationalTours = tourRepository.countToursByType(TourType.international);
 
         stats.setDomesticTours(domesticTours);
         stats.setInternationalTours(internationalTours);
 
         return stats;
     }
+
 }

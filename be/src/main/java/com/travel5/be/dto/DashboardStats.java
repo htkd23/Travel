@@ -33,5 +33,8 @@ public class DashboardStats {
         private String tourName;
         private long bookings;
         private double revenue;
+        private Integer tourId;      // Thêm dòng này
+        private String imagePath;    // Thêm dòng này
     }
+
 }

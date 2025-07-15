@@ -32,7 +32,7 @@ public class UserService {
         user.setLastName(req.getLastName());
         user.setEmail(req.getEmail());
         user.setDob(req.getDob());
-        user.setLoyaltyPoints(0); // ✅ thêm dòng này
+        user.setLoyaltyPoints(0);
 
         Role userRole = roleRepo.findByName("USER")
                 .orElseThrow(() -> new RuntimeException("Role not found"));
@@ -67,7 +67,7 @@ public class UserService {
                     .lastName(user.getLastName())
                     .email(user.getEmail())
                     .dob(user.getDob())
-                    .loyaltyPoints(user.getLoyaltyPoints()) // ✅ Thêm dòng này
+                    .loyaltyPoints(user.getLoyaltyPoints())
                     .roles(user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet()))
                     .build();
         }).toList();

@@ -18,7 +18,50 @@ const TourDomesticManagement = () => {
     const [selectedTourIds, setSelectedTourIds] = useState([]);
     const [showApplyVoucherModal, setShowApplyVoucherModal] = useState(false);
 
-    // Fetch tours from API
+    // Hàm strip HTML -> plain text
+    const stripHtml = (html) => {
+        if (!html) return "";
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        return div.textContent || div.innerText || "";
+    };
+
+    // Hàm bóc src từ thẻ img
+    const extractImageSrc = (htmlString) => {
+        if (!htmlString) return "";
+        const div = document.createElement("div");
+        div.innerHTML = htmlString;
+        const img = div.querySelector("img");
+        return img?.getAttribute("src") || "";
+    };
+
+    // Hàm build ra HTML <img> cho table
+    const buildImageHtml = (path, tourName) => {
+        let url = path || "";
+        if (path?.includes("<img")) {
+            url = extractImageSrc(path);
+        } else if (path && !path.startsWith("http") && !path.startsWith("/")) {
+            url = `http://localhost:8084/assets/${path}`;
+        }
+
+        // Nếu path là rỗng, thì gán ảnh mặc định
+        if (!url) {
+            url = "/default-image.png";
+        }
+
+        return `<img src="${url}" alt="${tourName}" class="w-16 h-10 object-cover rounded" />`;
+    };
+
+    // Hàm tính số ngày
+    const calculateDays = (start, end) => {
+        if (!start || !end) return 0;
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const diffMs = endDate - startDate;
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        return diffDays > 0 ? Math.ceil(diffDays) : 0;
+    };
+
     const fetchTours = () => {
         axios
             .get("http://localhost:8084/api/tours", {
@@ -31,9 +74,10 @@ const TourDomesticManagement = () => {
                     .filter((tour) => tour.tourType === "domestic")
                     .map((tour) => ({
                         ...tour,
-                        imagePath: tour.imagePath.startsWith("http")
-                            ? tour.imagePath
-                            : `http://localhost:8084/assets/${tour.imagePath}`,
+                        imagePath: buildImageHtml(tour.imagePath, stripHtml(tour.tourName)),
+                        tourName: stripHtml(tour.tourName),
+                        location: stripHtml(tour.location),
+                        description: stripHtml(tour.description),
                     }));
                 setTours(filteredTours);
             })
@@ -46,7 +90,6 @@ const TourDomesticManagement = () => {
         fetchTours();
     }, []);
 
-    // Handle search logic
     const handleSearch = () => {
         const token = localStorage.getItem("token");
         const formattedDate = departureDate
@@ -71,9 +114,10 @@ const TourDomesticManagement = () => {
             .then((res) => {
                 const updatedTours = res.data.map((tour) => ({
                     ...tour,
-                    imagePath: tour.imagePath.startsWith("http")
-                        ? tour.imagePath
-                        : `http://localhost:8084/assets/${tour.imagePath}`,
+                    imagePath: buildImageHtml(tour.imagePath, stripHtml(tour.tourName)),
+                    tourName: stripHtml(tour.tourName),
+                    location: stripHtml(tour.location),
+                    description: stripHtml(tour.description),
                 }));
                 setTours(updatedTours);
                 setCurrentPage(1);
@@ -84,7 +128,6 @@ const TourDomesticManagement = () => {
             });
     };
 
-    // Handle delete logic
     const handleDelete = (id) => {
         if (window.confirm("Bạn có chắc chắn muốn xóa tour này không?")) {
             axios
@@ -102,7 +145,6 @@ const TourDomesticManagement = () => {
         }
     };
 
-    // Get discounted price if any
     const getDiscountedPrice = (tour) => {
         if (
             tour.voucher &&
@@ -115,10 +157,16 @@ const TourDomesticManagement = () => {
         return tour.price;
     };
 
-    // Format price to VND
     const formatPrice = (price) => {
         return new Intl.NumberFormat("vi-VN").format(price);
     };
+
+    const translateStatus = (status) => {
+        if (status === "ACTIVE") return "Đang hoạt động";
+        if (status === "INACTIVE") return "Ngưng hoạt động";
+        return status || "";
+    };
+
 
     const totalPages = Math.ceil(tours.length / ITEMS_PER_PAGE);
     const paginatedTours = tours.slice(
@@ -131,70 +179,47 @@ const TourDomesticManagement = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-6">
                 Quản lý Tour Nội địa
             </h1>
-
-            {/* Thanh tìm kiếm + thêm mới */}
-            <div className="grid grid-cols-[2fr_2fr_2fr_auto_auto_auto] gap-4 bg-gray-50 p-4 rounded-md shadow-sm mb-6 w-full">
-                <div className="flex flex-col">
-                    <label className="text-sm text-gray-600 mb-1">Tìm kiếm</label>
+            {/* Thanh tìm kiếm */}
+            <div className="flex flex-wrap items-end gap-4 bg-gray-50 p-4 rounded-md shadow-sm mb-6">
+                <div className="flex flex-col w-1/4 min-w-[200px]">
+                    <label className="text-sm text-gray-600 mb-1">Địa điểm</label>
                     <input
                         type="text"
-                        placeholder="Nhập nội dung tìm kiếm"
-                        className="border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-green-600 focus:outline-none w-full"
+                        placeholder="Nhập địa điểm"
+                        className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-green-600 focus:outline-none"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                     />
                 </div>
 
-                <div className="flex flex-col">
+                <div className="flex flex-col w-1/4 min-w-[200px]">
                     <label className="text-sm text-gray-600 mb-1">Ngày khởi hành</label>
                     <input
                         type="date"
-                        className="border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-green-600 focus:outline-none w-full"
+                        className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-green-600 focus:outline-none"
                         value={departureDate}
                         onChange={(e) => setDepartureDate(e.target.value)}
                     />
                 </div>
 
-                <div className="flex flex-col">
-                    <label className="text-sm text-gray-600 mb-1">Giá tiền</label>
+                <div className="flex flex-col w-1/4 min-w-[200px]">
+                    <label className="text-sm text-gray-600 mb-1">Giá tối đa (VND)</label>
                     <input
-                        type="text"
-                        placeholder="Nhập giá tiền"
-                        className="border border-gray-300 rounded-md px-2 py-1.5 text-sm focus:ring-2 focus:ring-green-600 focus:outline-none w-full"
+                        type="number"
+                        placeholder="Nhập giá"
+                        className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-green-600 focus:outline-none"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
+                        min={0}
                     />
                 </div>
 
-                <div className="flex items-end">
+                <div className="w-full sm:w-auto">
                     <button
                         onClick={handleSearch}
-                        className="bg-green-700 hover:bg-green-800 text-white font-medium px-4 py-2 rounded-md text-sm"
+                        className="bg-green-700 hover:bg-green-800 text-white font-medium px-6 py-2 rounded-md mt-1 sm:mt-5"
                     >
                         Tìm kiếm
-                    </button>
-                </div>
-
-                <div className="flex items-end">
-                    <button
-                        onClick={() => navigate("/admin/tour-add")}
-                        className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-md text-sm"
-                    >
-                        Thêm Tour Mới
-                    </button>
-                </div>
-
-                <div className="flex items-end">
-                    <button
-                        onClick={() => setShowApplyVoucherModal(true)}
-                        disabled={selectedTourIds.length === 0}
-                        className={`${
-                            selectedTourIds.length === 0
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700"
-                        } text-white font-medium px-4 py-2 rounded-md text-sm`}
-                    >
-                        Áp dụng Voucher
                     </button>
                 </div>
             </div>
@@ -204,23 +229,10 @@ const TourDomesticManagement = () => {
                 <table className="min-w-full bg-white border border-gray-300 text-sm">
                     <thead>
                     <tr className="bg-gray-100 text-left">
-                        <th className="p-2 border">
-                            <input
-                                type="checkbox"
-                                checked={paginatedTours.length > 0 && selectedTourIds.length === paginatedTours.length}
-                                onChange={(e) => {
-                                    if (e.target.checked) {
-                                        setSelectedTourIds(paginatedTours.map((t) => t.tourId));
-                                    } else {
-                                        setSelectedTourIds([]);
-                                    }
-                                }}
-                            />
-                        </th>
                         <th className="p-2 border">#</th>
                         <th className="p-2 border">Hình</th>
                         <th className="p-2 border">Tên tour</th>
-                        <th className="p-2 border">Loại</th>
+                        <th className="p-2 border">Địa điểm</th>
                         <th className="p-2 border">Giá</th>
                         <th className="p-2 border">Số ngày</th>
                         <th className="p-2 border">Trạng thái</th>
@@ -236,36 +248,28 @@ const TourDomesticManagement = () => {
                                 className="hover:bg-gray-100 cursor-pointer"
                                 onClick={() => navigate(`/admin/tours/${tour.tourId}`)}
                             >
-                                <td className="p-2 border" onClick={(e) => e.stopPropagation()}>
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedTourIds.includes(tour.tourId)}
-                                        onChange={() => {
-                                            if (selectedTourIds.includes(tour.tourId)) {
-                                                setSelectedTourIds(
-                                                    selectedTourIds.filter((id) => id !== tour.tourId)
-                                                );
-                                            } else {
-                                                setSelectedTourIds([...selectedTourIds, tour.tourId]);
-                                            }
-                                        }}
-                                    />
-                                </td>
-                                <td className="p-2 border">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
                                 <td className="p-2 border">
-                                    <img
-                                        src={tour.imagePath}
-                                        alt={tour.tourName}
-                                        className="w-16 h-10 object-cover rounded"
-                                    />
+                                    {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                                 </td>
-                                <td className="p-2 border whitespace-nowrap">{tour.tourName}</td>
-                                <td className="p-2 border whitespace-nowrap">{tour.tourType}</td>
-                                <td className="p-2 border whitespace-nowrap">{formatPrice(discountedPrice)} VND</td>
+                                <td
+                                    className="p-2 border"
+                                    dangerouslySetInnerHTML={{ __html: tour.imagePath }}
+                                ></td>
                                 <td className="p-2 border whitespace-nowrap">
-                                    {new Date(tour.endDate).getDate() - new Date(tour.startDate).getDate()} ngày
+                                    {tour.tourName}
                                 </td>
-                                <td className="p-2 border whitespace-nowrap">{tour.status}</td>
+                                <td className="p-2 border whitespace-nowrap">
+                                    {tour.location}
+                                </td>
+                                <td className="p-2 border whitespace-nowrap">
+                                    {formatPrice(discountedPrice)} VND
+                                </td>
+                                <td className="p-2 border whitespace-nowrap">
+                                    {calculateDays(tour.startDate, tour.endDate)} ngày
+                                </td>
+                                <td className="p-2 border whitespace-nowrap">
+                                    {translateStatus(tour.status)}
+                                </td>
                                 <td className="border px-3 py-2 text-center space-x-2">
                                     <button
                                         onClick={(e) => {
@@ -304,13 +308,17 @@ const TourDomesticManagement = () => {
                     <button
                         key={i + 1}
                         onClick={() => setCurrentPage(i + 1)}
-                        className={`px-3 py-1 border rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : ""}`}
+                        className={`px-3 py-1 border rounded ${
+                            currentPage === i + 1 ? "bg-blue-500 text-white" : ""
+                        }`}
                     >
                         {i + 1}
                     </button>
                 ))}
                 <button
-                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                    onClick={() =>
+                        setCurrentPage((p) => Math.min(p + 1, totalPages))
+                    }
                     disabled={currentPage === totalPages}
                     className="px-3 py-1 border rounded disabled:opacity-50"
                 >

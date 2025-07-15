@@ -1,6 +1,6 @@
 import React from "react";
 import TourCard from "../../TourCard.jsx";
-import HotelCard from "./HotelCard";
+import HotelMap from "./HotelMap";
 
 const ResultSearch = ({ weatherData, selectedDate, tourData, hotelData, topTourNames = [] }) => {
     const hasWeatherData = weatherData?.forecast?.forecastday?.length > 0;
@@ -69,14 +69,13 @@ const ResultSearch = ({ weatherData, selectedDate, tourData, hotelData, topTourN
             {/* Danh sách khách sạn */}
             {hasHotelData && (
                 <>
-                    <h3 className="text-xl font-bold mb-4 mt-8">Khách sạn tại {locationName}</h3>
-                    <div className="space-y-6">
-                        {hotelData.map((hotel) => (
-                            <HotelCard key={hotel.hotelId} hotel={hotel} />
-                        ))}
-                    </div>
+                    <h3 className="text-xl font-bold mb-4 mt-8">
+                        Bản đồ khách sạn tại {locationName}
+                    </h3>
+                    <HotelMap hotels={hotelData} />
                 </>
             )}
+
         </div>
     );
 };

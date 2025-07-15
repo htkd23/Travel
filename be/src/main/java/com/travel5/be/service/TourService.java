@@ -72,7 +72,7 @@ public class TourService {
         return tourDTOs;
     }
 
-    // Thêm mới một tour, nhận TourDTO thay vì Tour
+    // Thêm mới một tour
     public Tour addTour(Tour tour) {
         LocalDateTime now = LocalDateTime.now();
         tour.setCreatedAt(now);
@@ -109,15 +109,10 @@ public class TourService {
     }
 
 
-    public List<Tour> searchTours(String destination, LocalDate departureDate, String price, String tourTypeStr) {
+    public List<Tour> searchTours(String destination, LocalDate departureDate, String price) {
         String normalizedDestination = VietnameseNormalizer.normalize(destination);
 
-        TourType tourType = null;
-        if (tourTypeStr != null && !tourTypeStr.isEmpty()) {
-            tourType = TourType.fromString(tourTypeStr);
-        }
-
-        List<Tour> filtered = tourRepository.findByDatePriceAndType(departureDate, price, tourType);
+        List<Tour> filtered = tourRepository.findByDateAndPrice(departureDate, price);
 
         // Lọc tiếp theo location đã normalize
         return filtered.stream()
@@ -127,6 +122,7 @@ public class TourService {
                 })
                 .toList();
     }
+
 
     public Tour addTourWithDetail(Tour tour, TourDetail tourDetail) {
         // Lưu tour trước

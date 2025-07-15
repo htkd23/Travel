@@ -21,7 +21,7 @@ public class BookingRequest {
 
     // Thêm trường voucherCode để client có thể gửi mã voucher
     private String voucherCode; // Mã voucher mà người dùng muốn áp dụng
-
+    private Integer quantity;
     // Getters and Setters
 }
 

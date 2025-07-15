@@ -83,7 +83,6 @@ public class ScheduledEmailService {
         }
     }
 
-
     /**
      * Hàm gửi email thủ công khi click button "Gửi ngay"
      */

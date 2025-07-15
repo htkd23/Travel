@@ -137,7 +137,7 @@ const TourCard = ({ tour, isHot }) => {
                 <div className="flex gap-2 mt-4 items-center">
                     <button
                         onClick={() =>
-                            navigate(`/booking/${tour.tourId}`, { state: { tour } })
+                            navigate(`/tour-detail/${tour.tourId}`, { state: { tour } })
                         }
                         className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2 px-4 rounded-full hover:scale-105 transition-all"
                     >

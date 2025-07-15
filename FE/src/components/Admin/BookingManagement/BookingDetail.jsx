@@ -6,12 +6,24 @@ const BookingDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [booking, setBooking] = useState(null);
+    const [imageUrl, setImageUrl] = useState("");
 
     useEffect(() => {
         axios.get(`http://localhost:8084/api/bookings/${id}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         })
-            .then((res) => setBooking(res.data))
+            .then((res) => {
+                setBooking(res.data);
+
+                let url = res.data.tourImagePath || "";
+                if (url && !url.startsWith("http") && !url.startsWith("/")) {
+                    url = `http://localhost:8084/assets/${url}`;
+                }
+                if (!url) {
+                    url = "/default-image.png";
+                }
+                setImageUrl(url);
+            })
             .catch((err) => console.error("Lỗi khi lấy booking:", err));
     }, [id]);
 
@@ -23,8 +35,8 @@ const BookingDetail = () => {
                 {/* Cột trái: Ảnh */}
                 <div className="md:w-1/2">
                     <img
-                        src={`http://localhost:8084/assets/${booking.tour.imagePath}`}
-                        alt={booking.tour.tourName}
+                        src={imageUrl}
+                        alt={booking.tourName}
                         className="w-full h-96 object-cover rounded-lg"
                     />
                 </div>
@@ -32,7 +44,8 @@ const BookingDetail = () => {
                 {/* Cột phải: Thông tin chi tiết */}
                 <div className="md:w-1/2">
                     <h2 className="text-2xl font-bold text-gray-900 mb-4">Chi tiết đặt tour</h2>
-                    <p className="mb-2"><strong>Tên tour:</strong> {booking.tour.tourName}</p>
+                    <p className="mb-2"><strong>Tên tour:</strong> {booking.tourName}</p>
+                    <p className="mb-2"><strong>Địa điểm:</strong> {booking.tourLocation}</p>
                     <p className="mb-2"><strong>Khách hàng:</strong> {booking.fullName}</p>
                     <p className="mb-2"><strong>Email:</strong> {booking.email || "Không có"}</p>
                     <p className="mb-2"><strong>SĐT:</strong> {booking.phone}</p>

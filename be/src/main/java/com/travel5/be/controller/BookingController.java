@@ -48,6 +48,7 @@ public class BookingController {
                         : (booking.getTour() != null ? booking.getTour().getPrice() : null),
                 booking.getTour() != null ? booking.getTour().getTourName() : null,
                 booking.getTour() != null ? booking.getTour().getLocation() : null,
+                booking.getTour() != null ? booking.getTour().getImagePath() : null,  // ✅ THÊM DÒNG NÀY
                 booking.getUser() != null ? booking.getUser().getFirstName() + " " + booking.getUser().getLastName() : null,
                 booking.getUser() != null ? booking.getUser().getEmail() : null,
                 booking.isHasFeedback()
@@ -84,6 +85,7 @@ public class BookingController {
                         (booking.getTour() != null ? booking.getTour().getPrice() : null),
                 booking.getTour() != null ? booking.getTour().getTourName() : null,
                 booking.getTour() != null ? booking.getTour().getLocation() : null,
+                booking.getTour() != null ? booking.getTour().getImagePath() : null,
                 booking.getUser() != null ? booking.getUser().getFirstName() + " " + booking.getUser().getLastName() : null,
                 booking.getUser() != null ? booking.getUser().getEmail() : null,
                 booking.isHasFeedback()
@@ -163,10 +165,12 @@ public class BookingController {
                     updated.getTour() != null ? updated.getTour().getPrice() : null,
                     updated.getTour() != null ? updated.getTour().getTourName() : null,
                     updated.getTour() != null ? updated.getTour().getLocation() : null,
+                    updated.getTour() != null ? updated.getTour().getImagePath() : null,   // ✅ THÊM DÒNG NÀY
                     updated.getUser() != null ? updated.getUser().getFirstName() + " " + updated.getUser().getLastName() : null,
                     updated.getUser() != null ? updated.getUser().getEmail() : null,
                     updated.isHasFeedback()
             );
+
 
             return ResponseEntity.ok(dto);
         } catch (Exception e) {

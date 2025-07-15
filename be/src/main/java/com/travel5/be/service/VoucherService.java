@@ -28,11 +28,11 @@ public class VoucherService {
         return false;
     }
 
-    // Đánh dấu voucher đã sử dụng
-    public void markVoucherAsUsed(Voucher voucher) {
-        voucher.setStatus(VoucherStatus.USED);
-        voucherRepository.save(voucher);
-    }
+//    // Đánh dấu voucher đã sử dụng
+//    public void markVoucherAsUsed(Voucher voucher) {
+//        voucher.setStatus(VoucherStatus.USED);
+//        voucherRepository.save(voucher);
+//    }
 
     // Tạo hoặc cập nhật voucher
     public Voucher createVoucher(Voucher voucher) {

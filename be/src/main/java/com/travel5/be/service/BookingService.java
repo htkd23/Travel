@@ -59,7 +59,10 @@ public class BookingService {
         booking.setStatus(BookingStatus.PENDING);
         booking.setPaymentStatus(PaymentStatus.UNPAID);
 
-        BigDecimal discountedPrice = calculateDiscountedPrice(tour);
+        int quantity = request.getQuantity() != null ? request.getQuantity() : 1;
+
+        BigDecimal unitPrice = calculateDiscountedPrice(tour);
+        BigDecimal discountedPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
 
         if (Boolean.TRUE.equals(request.getUseLoyaltyPoints())) {
             if (user.getLoyaltyPointsSafe() >= 50) {
@@ -92,6 +95,7 @@ public class BookingService {
 
         return savedBooking;
     }
+
 
     private BigDecimal calculateCurrentPrice(Booking booking) {
         if (booking.getDiscountedPrice() != null) {
@@ -133,15 +137,18 @@ public class BookingService {
         if (status == BookingStatus.CONFIRMED && booking.getPaymentStatus() == PaymentStatus.PAID) {
             User user = booking.getUser();
             if (user != null) {
-                int loyaltyPoints = user.getLoyaltyPoints();
-                user.setLoyaltyPoints(loyaltyPoints + 10);
-                userRepository.save(user);
+                BigDecimal price = booking.getDiscountedPrice();
+                if (price != null) {
+                    // Tính 5% giá tour
+                    BigDecimal loyalty = price.multiply(BigDecimal.valueOf(0.05));
+                    int points = loyalty.setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
+
+                    user.setLoyaltyPoints(user.getLoyaltyPointsSafe() + points);
+                    userRepository.save(user);
+                }
             }
 
-            if (booking.getTour() != null && booking.getDiscountedPrice() != null) {
-                BigDecimal originalPrice = booking.getTour().getPrice();
-                booking.setDiscountedPrice(originalPrice);
-            }
+            // Không đổi giá booking nữa nếu đã discounted, chỉ để nguyên discountedPrice
             booking.setPaymentStatus(PaymentStatus.PAID);
         }
 

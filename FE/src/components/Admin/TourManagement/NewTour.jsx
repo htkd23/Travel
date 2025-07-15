@@ -97,13 +97,15 @@ const NewTour = () => {
                 alert("✅ Thêm tour thành công!");
             }
 
-            navigate(`/admin/tours/${tourId}/add-detail`);
+            // Đây là đoạn fix:
+            navigate(`/admin/tours/${tourId}/add-detail`, {
+                state: { tourType: tour.tourType },
+            });
         } catch (err) {
             console.error("❌ Lỗi:", err.response?.data || err.message);
             alert("Đã xảy ra lỗi khi lưu tour.");
         }
     };
-
 
     return (
         <div className="w-full">

@@ -7,10 +7,8 @@ import com.travel5.be.dto.request.ChatRequest;
 import com.travel5.be.dto.response.ChatResponse;
 import com.travel5.be.entity.ChatHistory;
 import com.travel5.be.entity.Tour;
-import com.travel5.be.entity.Hotel;
 import com.travel5.be.repository.ChatHistoryRepository;
 import com.travel5.be.repository.TourRepository;
-import com.travel5.be.repository.HotelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -25,7 +23,6 @@ import java.util.List;
 public class ChatService {
 
     private final TourRepository tourRepository;
-    private final HotelRepository hotelRepository;
     private final ChatHistoryRepository chatHistoryRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -54,13 +51,6 @@ public class ChatService {
                 })
                 .toList();
 
-
-        List<Hotel> matchedHotels = hotelRepository.findAll().stream()
-                .filter(h -> VietnameseNormalizer.normalize(h.getHotelName()).contains(userMessage)
-                        || (h.getAddress() != null && VietnameseNormalizer.normalize(h.getAddress()).contains(userMessage))
-                        || (h.getDescription() != null && VietnameseNormalizer.normalize(h.getDescription()).contains(userMessage)))
-                .toList();
-
         StringBuilder contextBuilder = new StringBuilder();
 
         if (!matchedTours.isEmpty()) {
@@ -74,21 +64,6 @@ public class ChatService {
                         .append(tour.getPrice())
                         .append(" VNĐ. Mô tả: ")
                         .append(tour.getDescription() != null ? tour.getDescription() : "")
-                        .append("\n");
-            }
-        }
-
-        if (!matchedHotels.isEmpty()) {
-            contextBuilder.append("Tôi tìm thấy các khách sạn phù hợp:\n");
-            for (Hotel hotel : matchedHotels) {
-                contextBuilder.append("- ")
-                        .append(hotel.getHotelName())
-                        .append(" (")
-                        .append(hotel.getAddress())
-                        .append("), giá từ: ")
-                        .append(hotel.getPriceStart())
-                        .append(" VNĐ. Mô tả: ")
-                        .append(hotel.getDescription() != null ? hotel.getDescription() : "")
                         .append("\n");
             }
         }
@@ -139,7 +114,7 @@ Hãy trả lời bằng tiếng Việt, tự nhiên, dễ hiểu. Nếu không t
             }
           ]
         }
-        """, escapedMessage); // Chú ý việc dùng escapedMessage ở đây
+        """, escapedMessage);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

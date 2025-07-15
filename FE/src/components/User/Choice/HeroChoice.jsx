@@ -5,7 +5,6 @@ const HeroChoice = ({ setWeatherData, setTourData, setHotelData, setTopTourNames
     const [destination, setDestination] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
     const [priceValue, setPriceValue] = useState(1000);
-    const [tripType, setTripType] = useState("domestic");
     const [loading, setLoading] = useState(false);
 
     const API_KEY = "83c8c8bee6eb4b6c97c201931251803";
@@ -60,7 +59,6 @@ const HeroChoice = ({ setWeatherData, setTourData, setHotelData, setTopTourNames
                         })
                         : undefined,
                     price: priceValue.toString(),
-                    tourType: tripType,
                 },
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -72,7 +70,7 @@ const HeroChoice = ({ setWeatherData, setTourData, setHotelData, setTopTourNames
                 headers: { Authorization: `Bearer ${token}` }
             });
             const topTourNames = topResponse.data.topTours.map(t => t.tourName);
-            setTopTourNames(topTourNames); // ✅ Lưu lại
+            setTopTourNames(topTourNames);
 
             const sortedTours = [...(tourResponse.data || [])].sort((a, b) => {
                 const aIndex = topTourNames.indexOf(a.tourName);
@@ -83,11 +81,59 @@ const HeroChoice = ({ setWeatherData, setTourData, setHotelData, setTopTourNames
             setTourData(sortedTours);
 
             // 🔹 Gọi API tìm khách sạn
-            const hotelResponse = await axios.get("http://localhost:8084/api/hotels/search", {
-                params: { q: formattedDestination },
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setHotelData(hotelResponse.data || []);
+            const searchResponse = await axios.get(
+                "https://nominatim.openstreetmap.org/search",
+                {
+                    params: {
+                        q: destination,
+                        format: "json",
+                        limit: 1,
+                    },
+                    headers: {
+                        "User-Agent": "Travel5/1.0 (contact@yourdomain.com)",
+                    },
+                }
+            );
+
+            if (searchResponse.data.length > 0) {
+                const lat = parseFloat(searchResponse.data[0].lat);
+                const lon = parseFloat(searchResponse.data[0].lon);
+
+                // Tìm khách sạn quanh đó
+                const delta = 0.05;
+                const viewbox = [
+                    lon - delta,
+                    lat + delta,
+                    lon + delta,
+                    lat - delta,
+                ].join(",");
+
+                const hotelResponse = await axios.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    {
+                        params: {
+                            format: "json",
+                            limit: 20,
+                            amenity: "hotel",
+                            bounded: 1,
+                            viewbox: viewbox,
+                        },
+                        headers: {
+                            "User-Agent": "Travel5/1.0 (contact@yourdomain.com)",
+                        },
+                    }
+                );
+
+                // Chuyển data về format dễ dùng
+                const hotels = hotelResponse.data.map(item => ({
+                    hotelId: item.place_id,
+                    hotelName: item.display_name,
+                    lat: parseFloat(item.lat),
+                    lon: parseFloat(item.lon),
+                }));
+
+                setHotelData(hotels);
+            }
 
         } catch (error) {
             console.error("❌ Lỗi khi gọi API:", error);
@@ -109,7 +155,7 @@ const HeroChoice = ({ setWeatherData, setTourData, setHotelData, setTopTourNames
                     </div>
 
                     <div className="space-y-4 bg-white rounded-md p-4 relative">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 py-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 py-3">
                             <div>
                                 <label htmlFor="destination" className="opacity-70">
                                     Địa điểm
@@ -138,21 +184,6 @@ const HeroChoice = ({ setWeatherData, setTourData, setHotelData, setTopTourNames
                             </div>
 
                             <div>
-                                <label htmlFor="tripType" className="opacity-70">
-                                    Loại chuyến đi
-                                </label>
-                                <select
-                                    id="tripType"
-                                    value={tripType}
-                                    onChange={(e) => setTripType(e.target.value)}
-                                    className="w-full bg-gray-100 my-2 rounded-full p-2"
-                                >
-                                    <option value="domestic">Trong nước</option>
-                                    <option value="international">Ngoài nước</option>
-                                </select>
-                            </div>
-
-                            <div>
                                 <label htmlFor="price" className="opacity-70">
                                     Giá tiền (VND)
                                 </label>
@@ -166,8 +197,6 @@ const HeroChoice = ({ setWeatherData, setTourData, setHotelData, setTopTourNames
                                     min={0}
                                 />
                             </div>
-
-
                         </div>
 
                         <button

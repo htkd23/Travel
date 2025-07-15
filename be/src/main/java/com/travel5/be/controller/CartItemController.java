@@ -1,5 +1,6 @@
 package com.travel5.be.controller;
 
+import com.travel5.be.dto.request.CartRequest;
 import com.travel5.be.entity.CartItem;
 import com.travel5.be.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +17,35 @@ public class CartItemController {
     @Autowired
     private CartService cartService;
 
+    /**
+     * Thêm tour vào giỏ hàng.
+     */
     @PostMapping("/add")
-    public CartItem addToCart(@RequestParam Integer userId, @RequestParam Integer tourId) {
+    public CartItem addToCart(@RequestBody CartRequest request) {
         try {
-            return cartService.addToCart(userId, tourId);
+            return cartService.addToCart(
+                    request.getUserId(),
+                    request.getTourId(),
+                    request.getQuantity()
+            );
         } catch (RuntimeException e) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, e.getMessage()
             );
         }
+    }
+
+    /**
+     * Cập nhật số lượng tour trong giỏ hàng.
+     * Nếu quantity = 0 thì xóa luôn.
+     */
+    @PutMapping("/update-quantity")
+    public CartItem updateQuantity(@RequestBody CartRequest request) {
+        return cartService.updateQuantity(
+                request.getUserId(),
+                request.getTourId(),
+                request.getQuantity()
+        );
     }
 
     @GetMapping("/{userId}")

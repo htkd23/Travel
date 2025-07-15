@@ -222,13 +222,14 @@ public class TourController {
     public List<Tour> searchTours(
             @RequestParam(required = false) String destination,
             @RequestParam(required = false) String departureDate,
-            @RequestParam(required = false) String price,
-            @RequestParam(required = false) String tourType
+            @RequestParam(required = false) String price
     ) {
         LocalDate date = (departureDate != null) ?
                 LocalDate.parse(departureDate, DateTimeFormatter.ofPattern("dd/MM/yyyy")) : null;
-        return tourService.searchTours(destination, date, price, tourType);
+        return tourService.searchTours(destination, date, price);
     }
+
+
 
     @PostMapping("/{id}/add-detail")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")

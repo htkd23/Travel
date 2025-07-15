@@ -16,10 +16,8 @@ import com.travel5.be.entity.Tour;
 public interface TourRepository extends JpaRepository<Tour, Integer> {
     @Query("SELECT t FROM Tour t WHERE " +
             "(:departureDate IS NULL OR t.startDate >= :departureDate) " +
-            "AND (:price IS NULL OR CAST(t.price AS double) <= CAST(:price AS double)) " +
-            "AND (:tourType IS NULL OR t.tourType = :tourType)")
-    List<Tour> findByDatePriceAndType(LocalDate departureDate, String price, TourType tourType);
-    List<Tour> findByTourNameLikeOrLocationLikeOrDescriptionLike(String tourName, String location, String description);
+            "AND (:price IS NULL OR CAST(t.price AS double) <= CAST(:price AS double))")
+    List<Tour> findByDateAndPrice(LocalDate departureDate, String price);
 
     @Query("SELECT COUNT(t) FROM Tour t WHERE t.tourType = :tourType")
     long countToursByType(@Param("tourType") TourType tourType);

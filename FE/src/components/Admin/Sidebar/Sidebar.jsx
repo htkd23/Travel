@@ -13,6 +13,7 @@ import {
   FiCalendar,
   FiMessageCircle
 } from "react-icons/fi";
+import NotificationBell from "../../NotificationBell.jsx";
 
 const Sidebar = ({ isSidebarOpen }) => {
   const navigate = useNavigate();
@@ -102,17 +103,17 @@ const Sidebar = ({ isSidebarOpen }) => {
                 </Link>
               </li>
 
-              <li>
-                <Link
-                    to="/admin/hotel-management"
-                    className={`flex items-center px-4 py-3 rounded hover:bg-blue-50 ${
-                        isActive("/admin/hotel-management") ? "text-blue-600 font-semibold border-l-4 border-blue-600 bg-blue-50" : ""
-                    }`}
-                >
-                  <FiBriefcase className="mr-3 text-lg" />
-                  Quản lý khách sạn
-                </Link>
-              </li>
+              {/*<li>*/}
+              {/*  <Link*/}
+              {/*      to="/admin/hotel-management"*/}
+              {/*      className={`flex items-center px-4 py-3 rounded hover:bg-blue-50 ${*/}
+              {/*          isActive("/admin/hotel-management") ? "text-blue-600 font-semibold border-l-4 border-blue-600 bg-blue-50" : ""*/}
+              {/*      }`}*/}
+              {/*  >*/}
+              {/*    <FiBriefcase className="mr-3 text-lg" />*/}
+              {/*    Quản lý thông tin khách sạn*/}
+              {/*  </Link>*/}
+              {/*</li>*/}
 
               <li>
                 <Link
@@ -171,6 +172,7 @@ const Sidebar = ({ isSidebarOpen }) => {
                   Đăng xuất
                 </button>
               </li>
+
             </ul>
           </div>
         </aside>
